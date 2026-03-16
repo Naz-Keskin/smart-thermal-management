@@ -1,25 +1,40 @@
-# Smart Thermal Management System with Hysteresis Control
+// --- SMART THERMAL MANAGEMENT SYSTEM ---
+// Features: ADC reading, Power Transistor Switching, Hysteresis Control
 
-## Overview
-This project demonstrates an embedded system designed to control a high-current DC cooling motor based on real-time temperature data. The core focus of this project is the integration of **Embedded C++ Logic** with **Power Electronics (BJT Switching)** and the implementation of a **Hysteresis (Deadband) Control Algorithm** to ensure hardware longevity.
+// 1. PIN DEFINITIONS
+int sensorPin = A0; // Analog input for TMP36 Temperature Sensor
+int motorPin = 9;   // Digital output to NPN Transistor Base (Motor Control)
 
-## Hardware Components
-* **Microcontroller:** Arduino Uno (ATmega328P)
-* **Sensor:** TMP36 Temperature Sensor (Analog)
-* **Power Switch:** NPN Transistor (BJT)
-* **Actuator:** DC Motor (Cooling Fan Simulation)
-* **Power Supply:** Independent dual-power setup (5V Logic, External Battery for Motor)
+void setup() {
+  pinMode(motorPin, OUTPUT);
+  Serial.begin(9600); // Initialize serial communication for monitoring
+}
 
-## Key Engineering Principles Applied
-1.  **Analog-to-Digital Conversion (ADC):** Processing continuous voltage signals from the TMP36 sensor into 10-bit digital values, and mathematically converting them back to Celsius.
-2.  **Power Electronics & Load Isolation:** Safely driving a high-current DC motor using an NPN transistor. The microcontroller only provides a low-current base signal, preventing board damage while switching a heavier external load.
-3.  **Hysteresis Control (Chattering Prevention):** Implemented a deadband logic in C++. 
-    * Turn `ON` threshold: > 31.0 °C
-    * Turn `OFF` threshold: < 30.0 °C
-    * *Why?* This approach prevents the motor from rapidly turning on and off around a single setpoint, eliminating mechanical stress, protecting the transistor from overheating, and avoiding repeated inrush current spikes.
+void loop() {
+  // 2. ADC CONVERSION & TEMPERATURE CALCULATION
+  int rawValue = analogRead(sensorPin); // Read 10-bit ADC value (0-1023)
+  
+  // Convert raw value to voltage (5V reference)
+  float voltage = rawValue * (5.0 / 1023.0); 
+  
+  // Convert voltage to Celsius (TMP36 standard formula)
+  float temperature = (voltage - 0.5) * 100; 
 
-## Circuit Design
-*(You can take a screenshot of your Tinkercad circuit and add the image here later)*
-- The motor is powered by an independent power source.
-- Grounds (GND) are shared to ensure a common reference point.
-- The transistor acts as a low-side switch.
+  // Print current state to Serial Monitor
+  Serial.print("Current Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C");
+
+  // 3. HYSTERESIS (DEADBAND) CONTROL ALGORITHM
+  // Prevents rapid ON/OFF switching (chattering) to protect hardware from inrush currents.
+  
+  if (temperature > 31.0) {
+    digitalWrite(motorPin, HIGH); // Trigger transistor, turn ON motor
+  } 
+  else if (temperature < 30.0) {
+    digitalWrite(motorPin, LOW);  // Cut off base current, turn OFF motor
+  }
+  // If temperature is between 30.0 and 31.0, the system maintains its current state.
+
+  delay(500); // 500ms sampling rate
+}
