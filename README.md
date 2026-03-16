@@ -19,7 +19,7 @@ This project demonstrates an embedded system designed to control a high-current 
     * *Why?* This approach prevents the motor from rapidly turning on and off around a single setpoint, eliminating mechanical stress, protecting the transistor from overheating, and avoiding repeated inrush current spikes.
 
 ## Circuit Design
-*(You can take a screenshot of your Tinkercad circuit and add the image here later)*
+![Smart Thermal Management Circuit](circuit_diagram.png)
 - The motor is powered by an independent power source.
 - Grounds (GND) are shared to ensure a common reference point.
 - The transistor acts as a low-side switch.
